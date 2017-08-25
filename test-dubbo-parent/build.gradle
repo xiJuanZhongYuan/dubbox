@@ -1,0 +1,51 @@
+buildscript {
+	ext {
+		springBootVersion = '1.4.4.RELEASE'
+	}
+	repositories {
+		maven {url "http://maven.aliyun.com/nexus/content/groups/public/"}
+		maven { url "http://repo.maven.apache.org/maven2" }
+		maven {url "http://202.105.139.120:8081/artifactory/repo"}
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+subprojects  {
+	apply plugin: 'java'
+	apply plugin: 'maven'
+	apply plugin: 'eclipse'
+	apply plugin: 'org.springframework.boot'
+	group = 'com.tydic.boot-parent'	
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
+	[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+	ext{
+	   springversion=""
+	}
+	repositories {
+	    maven {url "http://maven.aliyun.com/nexus/content/groups/public/"}
+		maven { url "http://repo.maven.apache.org/maven2" }
+		maven {url "http://202.105.139.120:8081/artifactory/repo"}
+	}
+	dependencies {
+		//dubbo工程需要的jar包
+		compile('com.alibaba:dubbo:2.8.4')
+		compile('org.jboss.resteasy:resteasy-jaxrs:3.0.7.Final')
+		compile('org.jboss.resteasy:resteasy-client:3.0.7.Final')
+		compile('javax.validation:validation-api:1.0.0.GA')
+		compile('com.github.sgroschupf:zkclient:0.1')
+		compile("org.apache.zookeeper:zookeeper:3.4.9")
+		
+		
+		compile('com.tydic.disconf:disconf-client:2.6.36_0')
+		compile ("com.google.code.gson:gson:2.8.0")
+		//由于server工程引用了joids，jodis依赖的版本是2.9.1，为了保证jar包的一致性，这里也升级
+		compile ("org.apache.curator:curator-framework:2.9.1")
+	}	
+	configurations {
+	  	compile.exclude group: "org.slf4j",module:"slf4j-log4j12"
+	  	compile.exclude group: "org.springframework", module: "spring-dao"
+	  	compile.exclude group: "org.springframework", module: "spring-ibatis"
+	}	
+}

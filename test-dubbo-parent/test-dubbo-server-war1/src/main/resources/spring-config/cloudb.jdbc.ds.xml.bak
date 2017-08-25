@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+	 							   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	 							   http://www.springframework.org/schema/tx  http://www.springframework.org/schema/tx/spring-tx.xsd
+	                              http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+	<!-- 配置数据源 -->
+	<bean id="configDS" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<property name="url" value="${autoconfig.url}" />
+		<property name="username" value="${autoconfig.username}" />
+		<property name="password" value="${autoconfig.password}" />
+		<property name="initialSize" value="${autoconfig.initialSize}" />
+		<property name="minIdle" value="${autoconfig.minIdle}" />
+		<property name="maxActive" value="${autoconfig.maxActive}" />
+		<property name="maxWait" value="${autoconfig.maxWait}" />
+		<property name="timeBetweenEvictionRunsMillis" value="${autoconfig.timeBetweenEvictionRunsMillis}" />
+		<property name="minEvictableIdleTimeMillis" value="${autoconfig.minEvictableIdleTimeMillis}" />
+		<property name="validationQuery" value="${autoconfig.validationQuery}" />
+		<property name="testWhileIdle" value="${autoconfig.testWhileIdle}" />
+		<property name="testOnBorrow" value="${autoconfig.testOnBorrow}" />
+		<property name="testOnReturn" value="${autoconfig.testOnReturn}" />
+	</bean>
+	<bean id="loadConfigFromNDB" class="com.tydic.cloudbjdbc.cofig.LoadConfigFromNDB">
+		<property name="dataSource" ref="configDS" />
+		<property name="schemaName" value="${autoconfig.schemaName}" />
+	</bean>
+	<!-- 表分片规则加载 -->
+	<bean id="shardingRule" class="com.tydic.cloudbjdbc.api.rule.ShardingRule">
+		<property name="loadConfig" ref="loadConfigFromNDB" />
+		<constructor-arg index="0">
+			<list>
+				<ref bean="latn" />
+				<ref bean="latnSuffix" />
+			</list>
+		</constructor-arg>
+	</bean>
+	<!-- 面向业务的数据源，实现了java.sql.dataSoure中的方法 -->
+	<bean id="dataSource" class="com.tydic.cloudbjdbc.api.ShardingDataSource">
+		<constructor-arg index="0" ref="shardingRule" />
+		<constructor-arg index="1">
+			<props>
+				<prop key="executor.min.idle.size">2</prop>
+				<prop key="executor.max.size">4</prop>
+			</props>
+		</constructor-arg>
+		<constructor-arg index="2" ref="seqAll" />
+	</bean>
+	<!-- sqlSessionFactory工厂 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="mapperLocations" value="classpath:sql-config/*.xml" />
+		<property name="configLocation" value="classpath:mybatis-config/mybatis.config.xml" />
+	</bean>
+	<bean id="routeSwith" class="com.tydic.fm.mybatis.impl.RouteSwithImpl"></bean>
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory" />
+		<property name="targetSqlSessionFactorys">
+			<map>
+				<entry key="sqlSessionFactory" value-ref="sqlSessionFactory" />
+			</map>
+		</property>
+		<property name="routeSwith" ref="routeSwith"></property>
+	</bean>
+	<bean id="sqlSessionDaoSupport" class="com.tydic.fm.mybatis.dao.SqlSessionDaoImpl">
+		<property name="sqlSessionTemplate" ref="sqlSessionTemplate" />
+	</bean>
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- 配置事务回滚的场景 -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="dealCustInfo" rollback-for="java.lang.Exception" />
+			<tx:method name="dealProvPartyNbrInfo" rollback-for="com.tydic.boot.dubbo.server.exception.BusinessException" />
+		</tx:attributes>
+	</tx:advice>
+	<!-- 指定那些类的哪些方法参与事务 -->
+	<aop:config>
+		<aop:advisor advice-ref="txAdvice"
+			pointcut="execution(* com.tydic.service.*.*(..))" />
+		<!-- <aop:advisor advice-ref="txAdvice"
+			pointcut="execution(* com.tydic.service.*.*(..))||execution(* com.tydic.boot.dubbo.server.service.provpartynbr.bo.impl.*.*(..))" /> -->
+	</aop:config>
+</beans>

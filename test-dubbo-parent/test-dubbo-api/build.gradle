@@ -1,0 +1,21 @@
+	uploadArchives {
+		repositories {
+			mavenDeployer {
+				repository(url: "http://202.105.139.120:8081/artifactory/divframe-libs"){
+					 authentication(userName:'xiangsl', password:'xiangsl')
+				}
+				pom.project {
+					licenses {
+						license {
+							name 'The tydic License, Version 1.0.0'
+							url 'http://www.tydic.com'
+							distribution 'xiangsl'
+						}
+					}
+				}
+			}
+		}
+	}
+	dependencies {
+	}
+

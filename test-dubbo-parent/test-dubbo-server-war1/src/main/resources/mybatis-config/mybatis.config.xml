@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>   
+<!DOCTYPE configuration   
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"   
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<properties>
+		<!-- 目标数据库环境oracle,mysql,其它类型数据库待扩展,no表示不处理 -->
+		<property name="data_base" value="no" />
+		<!-- 是否需要sql转换,1:处理,0:不处理 -->
+		<property name="handle" value="1" />
+		<!--排除部分sqlId -->
+		<property name="handle_exclude_sql" value="" />
+		<!-- 是否需要sql提示,1:提示,0:不提示 -->
+		<property name="hint" value="1" />
+		<!-- 排除部分关键字,多个以逗号隔开,比如nvl,ifnull -->
+		<property name="hint_no_keys" value="getcodename" />
+		<!--排除部分sqlId -->
+		<property name="hint_exclude_sql" value="" />
+		<!-- sql表数量限制,0:关闭,其它则默认开启,建议为4 -->
+		<property name="limit" value="4" />
+		<!-- sql排除sqlId -->
+		<property name="limit_exclude_sql" value="" />
+		<!-- 序列替换的函数名 -->
+		<property name="handle_seqname_fun" value="getSeqFunction" />
+	</properties>
+	<plugins>
+		<plugin interceptor="com.tydic.fm.mybatis.pages.TPageInterceptor">
+			<property name="databaseType" value="oracle" />
+		</plugin>
+	</plugins>
+</configuration>

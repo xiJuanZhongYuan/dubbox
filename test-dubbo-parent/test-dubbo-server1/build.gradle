@@ -1,0 +1,33 @@
+import org.gradle.plugins.ide.eclipse.model.Facet
+apply plugin: 'war'
+dependencies {
+	compile fileTree(dir: 'libs', include: '*.jar')
+	compile project(":test-dubbo-api")
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-starter-web'){
+		exclude group:'org.springframework.boot',module:'spring-boot-starter-tomcat'
+	}
+	providedCompile  'org.springframework.boot:spring-boot-starter-tomcat:1.4.4.RELEASE'
+	compile ("org.hibernate:hibernate-validator:4.2.0.Final")
+	compile ("org.jboss.resteasy:resteasy-jackson-provider:3.0.7.Final")
+	compile ("org.jboss.resteasy:resteasy-jaxb-provider:3.0.7.Final")
+	compile ("com.tydic.cloudb:cloudb-jdbc:1.2.4")
+	compile ("com.tydic.cloudb:cloudb-jdbc-config:1.2.4")
+	compile ("cglib:cglib:3.1")
+	compile ("org.apache.commons:commons-collections4:4.1")
+	compile ("com.tydic.cloud:cloud-mybatis:1.0.0")
+	compile ("io.codis.jodis:jodis:0.3.1")
+}
+
+eclipse {
+		wtp {
+			facet {
+				facet name: 'jst.web', type: Facet.FacetType.fixed
+				facet name: 'wst.jsdt.web', type: Facet.FacetType.fixed
+				facet name: 'jst.java', type: Facet.FacetType.fixed
+				facet name: 'jst.web', version: '3.0'
+				facet name: 'jst.java', version: '1.8'
+				facet name: 'wst.jsdt.web', version: '1.0'
+			}
+		}
+	}

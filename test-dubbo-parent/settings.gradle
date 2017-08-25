@@ -1,0 +1,6 @@
+include 'test-dubbo-api'
+include 'test-dubbo-server'
+include 'test-dubbo-server1'
+include 'test-dubbo-server-war1'
+include 'test-dubbo-web1'
+rootProject.name = 'test-dubbo-parent'
